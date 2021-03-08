@@ -13,6 +13,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32l1xx.h"
+#include "usart.h"
 
 /* Exported macro ------------------------------------------------------------*/
 #define SPI_CSB_ENABLE()                                      (GPIO_ResetBits(GPIOA, GPIO_Pin_4))
@@ -26,6 +27,6 @@ uint8_t SPI_WriteByte(uint8_t data);
 uint8_t SPI_ReadByte(uint8_t data);
 
 /* Exported variables --------------------------------------------------------*/
-extern uint8_t usartRevBuffer[32];
+extern uint8_t usartRevBuffer[USART_REV_BUFFER_SIZE];
 
 #endif // #ifndef SPI_H
