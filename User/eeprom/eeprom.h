@@ -26,10 +26,16 @@ enum
 {
 	eEEPROM_VERSION_ADDR = 0x00,
 	
-	eSENSOR_RANGE_UPPER_ADDR,
-	eSENSOR_RANGE_UPPER_DECIMAL_ADDR = eSENSOR_RANGE_UPPER_ADDR + 2,
-	eSENSOR_RANGE_LOWER_ADDR,
-	eSENSOR_RANGE_LOWER_DECIMAL_ADDR = eSENSOR_RANGE_LOWER_ADDR + 2,
+	ePSI_SENSOR_RANGE_UPPER_ADDR,
+	ePSI_SENSOR_RANGE_UPPER_DECIMAL_ADDR = ePSI_SENSOR_RANGE_UPPER_ADDR + 2,
+	ePSI_SENSOR_RANGE_LOWER_ADDR,
+	ePSI_SENSOR_RANGE_LOWER_DECIMAL_ADDR = ePSI_SENSOR_RANGE_LOWER_ADDR + 2,
+	
+	eBAR_SENSOR_RANGE_UPPER_ADDR,
+	eBAR_SENSOR_RANGE_UPPER_DECIMAL_ADDR = eBAR_SENSOR_RANGE_UPPER_ADDR + 2,
+	eBAR_SENSOR_RANGE_LOWER_ADDR,
+	eBAR_SENSOR_RANGE_LOWER_DECIMAL_ADDR = eBAR_SENSOR_RANGE_LOWER_ADDR + 2,
+	
 	eSENSOR_UNIT,
 	eSENSOR_DAP,
 	
@@ -92,7 +98,16 @@ typedef enum
 	FUNC_WIN2,
 }EnumFuncMode;
 
-// calculate data
+typedef struct
+{
+	uint8_t sensorRgeUpper_H;
+	uint8_t sensorRgeUpper_L;
+	uint8_t sensorRgeUpperDecimal;
+	uint8_t sensorRgeLower_H;
+	uint8_t sensorRgeLower_L;
+	uint8_t sensorRgeLowerDecimal;
+}STSysSensorRange;
+
 typedef struct
 {
 	uint8_t eepromVer;
@@ -100,6 +115,20 @@ typedef struct
 	uint8_t sensorRgeUpperDecimal;
 	uint16_t sensorRgeLower;
 	uint8_t sensorRgeLowerDecimal;
+}STSysSensorAdjVal;
+
+// calculate data
+typedef struct
+{
+	uint8_t eepromVer;
+	
+//	uint16_t sensorRgeUpper;
+//	uint8_t sensorRgeUpperDecimal;
+//	uint16_t sensorRgeLower;
+//	uint8_t sensorRgeLowerDecimal;
+	
+	STSysSensorAdjVal stSensorAdjVal[2];
+	
 	uint8_t sensorUnit;
 	uint8_t dap;
 	
@@ -134,12 +163,14 @@ typedef struct
 typedef struct
 {
 	uint8_t eepromVer;
-	uint8_t sensorRgeUpper_H;
-	uint8_t sensorRgeUpper_L;
-	uint8_t sensorRgeUpperDecimal;
-	uint8_t sensorRgeLower_H;
-	uint8_t sensorRgeLower_L;
-	uint8_t sensorRgeLowerDecimal;
+//	uint8_t sensorRgeUpper_H;
+//	uint8_t sensorRgeUpper_L;
+//	uint8_t sensorRgeUpperDecimal;
+//	uint8_t sensorRgeLower_H;
+//	uint8_t sensorRgeLower_L;
+//	uint8_t sensorRgeLowerDecimal;
+	
+	STSysSensorRange stSensorRange[2];
 	uint8_t sensorUnit;
 	uint8_t dap;
 	

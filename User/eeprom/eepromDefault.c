@@ -19,13 +19,22 @@
 
 STSysParamsSection1 stEepromSeg1DefaultVal = {
 	EEPROM_VERSION_CODE, // EEPROM Ver
+	// psi
+	0x09,	// Sensor BAR Range Upper H
+	0x10,	// Sensor BAR Range Upper L
+	0x01, // Sensor BAR Range Upper decimal
+	0x00, // Sensor BAR Range Lower H
+	0x00, // Sensor BAR Range Lower L
+	0x03, // Sensor BAR Range Lower decimal
 	
-	0x06,	// Sensor Range Upper H
-	0x40,	// Sensor Range Upper L
-	0x02, // Sensor Range Upper decimal
-	0x00, // Sensor Range Lower H
-	0x00, // Sensor Range Lower L
-	0x03, // Sensor Range Lower decimal
+	// bar
+	0x06,	// Sensor PSI Range Upper H
+	0x40,	// Sensor PSI Range Upper L
+	0x02, // Sensor PSI Range Upper decimal
+	0x00, // Sensor PSI Range Lower H
+	0x00, // Sensor PSI Range Lower L
+	0x03, // Sensor PSI Range Lower decimal
+	
 	0x00, // Sensor Unit
 	0x08, // DAP
 	
@@ -39,27 +48,27 @@ STSysParamsSection2 stEepromSeg2DefaultVal[2] =
 	// psi
 	0x09, // P-H_H
 	0x10, // P-H_L
-	0x00, // Decimal places
+	0x01, // Decimal places
 	0x00, // P-L_H
 	0x00, // P-L_L
 	0x03, // Decimal places
 	
 	0x06, // AH1_H
 	0xCC, // AH1_L
-	0x00, // Decimal places
+	0x01, // Decimal places
 	0x05, // AL1_H
 	0xAA, // AL1_L
-	0x00, // Decimal places
+	0x01, // Decimal places
 	0x00, // DL1_H
 	0x00, // DL1_L
 	0x03, // Decimal places
 	
 	0x06, // AH2_H
 	0xCC, // AH2_L
-	0x00, // Decimal places
+	0x01, // Decimal places
 	0x05, // AL2_H
 	0xAA, // AL2_L
-	0x00, // Decimal places
+	0x01, // Decimal places
 	0x00, // DL2_H
 	0x00, // DL2_L
 	0x03, // Decimal places

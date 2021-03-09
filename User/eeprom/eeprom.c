@@ -26,6 +26,8 @@ STSysParamsSection2 stSysSaveDataSection2[2];
 STSysAdjValSection2 stSysAdjValSection2[2];
 
 /* Private function prototypes -----------------------------------------------*/
+void EEPROM_LoadAdjParams(void);
+
 /* Private functions ---------------------------------------------------------*/
 
 extern STSysParamsSection1 stEepromSeg1DefaultVal;
@@ -151,90 +153,7 @@ void EEPROM_RestoreFactoryDefaultValue(void)
 	memcpy((uint8_t *)stSysSaveDataSection2, (uint8_t *)&stEepromSeg2DefaultVal, 2 * sizeof(stEepromSeg2DefaultVal));
 	
 	// Load the parameters needed by the system
-	{
-		// upper limit
-		stSysAdjValSection1.sensorRgeUpper = (uint16_t)stSysSaveDataSection1.sensorRgeUpper_H << 8 | stSysSaveDataSection1.sensorRgeUpper_L;
-		stSysAdjValSection1.sensorRgeUpperDecimal = stSysSaveDataSection1.sensorRgeUpperDecimal;
-		// low limit
-		stSysAdjValSection1.sensorRgeLower = (uint16_t)stSysSaveDataSection1.sensorRgeLower_H << 8 | stSysSaveDataSection1.sensorRgeLower_L;
-		stSysAdjValSection1.sensorRgeLowerDecimal = stSysSaveDataSection1.sensorRgeLowerDecimal;
-		
-		// unit
-		stSysAdjValSection1.eUnit = stSysSaveDataSection1.eUnit;
-		
-		// DAP
-		stSysAdjValSection1.dap = stSysSaveDataSection1.dap;
-		
-		// fuc
-		stSysAdjValSection1.eFunc1 = stSysSaveDataSection1.eFunc1;
-		stSysAdjValSection1.eFunc2 = stSysSaveDataSection1.eFunc2;
-		
-		// bar
-		// P-L
-		stSysAdjValSection2[UNIT_BAR].PL = (uint16_t)stSysSaveDataSection2[UNIT_BAR].PL_H << 8 | stSysSaveDataSection2[UNIT_BAR].PL_L;
-		stSysAdjValSection2[UNIT_BAR].PLDecimal = stSysSaveDataSection2[UNIT_BAR].PLDecimal;
-		
-		// P-H
-		stSysAdjValSection2[UNIT_BAR].PH = (uint16_t)stSysSaveDataSection2[UNIT_BAR].PH_H << 8 | stSysSaveDataSection2[UNIT_BAR].PH_L;
-		stSysAdjValSection2[UNIT_BAR].PHDecimal = stSysSaveDataSection2[UNIT_BAR].PHDecimal;
-		
-		// AL1
-		stSysAdjValSection2[UNIT_BAR].AL1 = (uint16_t)stSysSaveDataSection2[UNIT_BAR].AL1_H << 8 | stSysSaveDataSection2[UNIT_BAR].AL1_L;
-		stSysAdjValSection2[UNIT_BAR].AL1Decimal = stSysSaveDataSection2[UNIT_BAR].AL1Decimal;
-		
-		// AH1
-		stSysAdjValSection2[UNIT_BAR].AH1 = (uint16_t)stSysSaveDataSection2[UNIT_BAR].AH1_H << 8 | stSysSaveDataSection2[UNIT_BAR].AH1_L;
-		stSysAdjValSection2[UNIT_BAR].AH1Decimal = stSysSaveDataSection2[UNIT_BAR].AH1Decimal;
-		
-		// DL1
-		stSysAdjValSection2[UNIT_BAR].AlDL1 = (uint16_t)stSysSaveDataSection2[UNIT_BAR].AlDL1_H << 8 | stSysSaveDataSection2[UNIT_BAR].A1DL1_L;
-		stSysAdjValSection2[UNIT_BAR].A1DL1Decimal = stSysSaveDataSection2[UNIT_BAR].A1DL1Decimal;
-		
-		// AL2
-		stSysAdjValSection2[UNIT_BAR].AL2 = (uint16_t)stSysSaveDataSection2[UNIT_BAR].AL2_H << 8 | stSysSaveDataSection2[UNIT_BAR].AL2_L;
-		stSysAdjValSection2[UNIT_BAR].AL2Decimal = stSysSaveDataSection2[UNIT_BAR].AL2Decimal;
-		
-		// AH2
-		stSysAdjValSection2[UNIT_BAR].AH2 = (uint16_t)stSysSaveDataSection2[UNIT_BAR].AH2_H << 8 | stSysSaveDataSection2[UNIT_BAR].AH2_L;
-		stSysAdjValSection2[UNIT_BAR].AH2Decimal = stSysSaveDataSection2[UNIT_BAR].AH2Decimal;
-		
-		// DL2
-		stSysAdjValSection2[UNIT_BAR].A2DL2 = (uint16_t)stSysSaveDataSection2[UNIT_BAR].A2DL2_H << 8 | stSysSaveDataSection2[UNIT_BAR].A2DL2_L;
-		stSysAdjValSection2[UNIT_BAR].A2DL2Decimal = stSysSaveDataSection2[UNIT_BAR].A2DL2Decimal;
-		
-		// psi
-		// P-L
-		stSysAdjValSection2[UNIT_PSI].PL = (uint16_t)stSysSaveDataSection2[UNIT_PSI].PL_H << 8 | stSysSaveDataSection2[UNIT_PSI].PL_L;
-		stSysAdjValSection2[UNIT_PSI].PLDecimal = stSysSaveDataSection2[UNIT_PSI].PLDecimal;
-		
-		// P-H
-		stSysAdjValSection2[UNIT_PSI].PH = (uint16_t)stSysSaveDataSection2[UNIT_PSI].PH_H << 8 | stSysSaveDataSection2[UNIT_PSI].PH_L;
-		stSysAdjValSection2[UNIT_PSI].PHDecimal = stSysSaveDataSection2[UNIT_PSI].PHDecimal;
-		
-		// AL1
-		stSysAdjValSection2[UNIT_PSI].AL1 = (uint16_t)stSysSaveDataSection2[UNIT_PSI].AL1_H << 8 | stSysSaveDataSection2[UNIT_PSI].AL1_L;
-		stSysAdjValSection2[UNIT_PSI].AL1Decimal = stSysSaveDataSection2[UNIT_PSI].AL1Decimal;
-		
-		// AH1
-		stSysAdjValSection2[UNIT_PSI].AH1 = (uint16_t)stSysSaveDataSection2[UNIT_PSI].AH1_H << 8 | stSysSaveDataSection2[UNIT_PSI].AH1_L;
-		stSysAdjValSection2[UNIT_PSI].AH1Decimal = stSysSaveDataSection2[UNIT_PSI].AH1Decimal;
-		
-		// DL1
-		stSysAdjValSection2[UNIT_PSI].AlDL1 = (uint16_t)stSysSaveDataSection2[UNIT_PSI].AlDL1_H << 8 | stSysSaveDataSection2[UNIT_PSI].A1DL1_L;
-		stSysAdjValSection2[UNIT_PSI].A1DL1Decimal = stSysSaveDataSection2[UNIT_PSI].A1DL1Decimal;
-		
-		// AL2
-		stSysAdjValSection2[UNIT_PSI].AL2 = (uint16_t)stSysSaveDataSection2[UNIT_PSI].AL2_H << 8 | stSysSaveDataSection2[UNIT_PSI].AL2_L;
-		stSysAdjValSection2[UNIT_PSI].AL2Decimal = stSysSaveDataSection2[UNIT_PSI].AL2Decimal;
-		
-		// AH2
-		stSysAdjValSection2[UNIT_PSI].AH2 = (uint16_t)stSysSaveDataSection2[UNIT_PSI].AH2_H << 8 | stSysSaveDataSection2[UNIT_PSI].AH2_L;
-		stSysAdjValSection2[UNIT_PSI].AH2Decimal = stSysSaveDataSection2[UNIT_PSI].AH2Decimal;
-		
-		// DL2
-		stSysAdjValSection2[UNIT_PSI].A2DL2 = (uint16_t)stSysSaveDataSection2[UNIT_PSI].A2DL2_H << 8 | stSysSaveDataSection2[UNIT_PSI].A2DL2_L;
-		stSysAdjValSection2[UNIT_PSI].A2DL2Decimal = stSysSaveDataSection2[UNIT_PSI].A2DL2Decimal;
-	}
+	EEPROM_LoadAdjParams();
 }
 
 /**
@@ -264,95 +183,106 @@ void EEPROM_PowerOnLoad(void)
 	}
 	
 	// Load the parameters needed by the system
-	{
-		// upper limit
-		stSysAdjValSection1.sensorRgeUpper = (uint16_t)stSysSaveDataSection1.sensorRgeUpper_H << 8 | stSysSaveDataSection1.sensorRgeUpper_L;
-		stSysAdjValSection1.sensorRgeUpperDecimal = stSysSaveDataSection1.sensorRgeUpperDecimal;
-		// low limit
-		stSysAdjValSection1.sensorRgeLower = (uint16_t)stSysSaveDataSection1.sensorRgeLower_H << 8 | stSysSaveDataSection1.sensorRgeLower_L;
-		stSysAdjValSection1.sensorRgeLowerDecimal = stSysSaveDataSection1.sensorRgeLowerDecimal;
-		
-		// unit
-		stSysAdjValSection1.eUnit = stSysSaveDataSection1.eUnit;
-		
-		// DAP
-		stSysAdjValSection1.dap = stSysSaveDataSection1.dap;
-		
-		// fuc
-		stSysAdjValSection1.eFunc1 = stSysSaveDataSection1.eFunc1;
-		stSysAdjValSection1.eFunc2 = stSysSaveDataSection1.eFunc2;
-		
-		// bar
-		// P-L
-		stSysAdjValSection2[UNIT_BAR].PL = (uint16_t)stSysSaveDataSection2[UNIT_BAR].PL_H << 8 | stSysSaveDataSection2[UNIT_BAR].PL_L;
-		stSysAdjValSection2[UNIT_BAR].PLDecimal = stSysSaveDataSection2[UNIT_BAR].PLDecimal;
-		
-		// P-H
-		stSysAdjValSection2[UNIT_BAR].PH = (uint16_t)stSysSaveDataSection2[UNIT_BAR].PH_H << 8 | stSysSaveDataSection2[UNIT_BAR].PH_L;
-		stSysAdjValSection2[UNIT_BAR].PHDecimal = stSysSaveDataSection2[UNIT_BAR].PHDecimal;
-		
-		// AL1
-		stSysAdjValSection2[UNIT_BAR].AL1 = (uint16_t)stSysSaveDataSection2[UNIT_BAR].AL1_H << 8 | stSysSaveDataSection2[UNIT_BAR].AL1_L;
-		stSysAdjValSection2[UNIT_BAR].AL1Decimal = stSysSaveDataSection2[UNIT_BAR].AL1Decimal;
-		
-		// AH1
-		stSysAdjValSection2[UNIT_BAR].AH1 = (uint16_t)stSysSaveDataSection2[UNIT_BAR].AH1_H << 8 | stSysSaveDataSection2[UNIT_BAR].AH1_L;
-		stSysAdjValSection2[UNIT_BAR].AH1Decimal = stSysSaveDataSection2[UNIT_BAR].AH1Decimal;
-		
-		// DL1
-		stSysAdjValSection2[UNIT_BAR].AlDL1 = (uint16_t)stSysSaveDataSection2[UNIT_BAR].AlDL1_H << 8 | stSysSaveDataSection2[UNIT_BAR].A1DL1_L;
-		stSysAdjValSection2[UNIT_BAR].A1DL1Decimal = stSysSaveDataSection2[UNIT_BAR].A1DL1Decimal;
-		
-		// AL2
-		stSysAdjValSection2[UNIT_BAR].AL2 = (uint16_t)stSysSaveDataSection2[UNIT_BAR].AL2_H << 8 | stSysSaveDataSection2[UNIT_BAR].AL2_L;
-		stSysAdjValSection2[UNIT_BAR].AL2Decimal = stSysSaveDataSection2[UNIT_BAR].AL2Decimal;
-		
-		// AH2
-		stSysAdjValSection2[UNIT_BAR].AH2 = (uint16_t)stSysSaveDataSection2[UNIT_BAR].AH2_H << 8 | stSysSaveDataSection2[UNIT_BAR].AH2_L;
-		stSysAdjValSection2[UNIT_BAR].AH2Decimal = stSysSaveDataSection2[UNIT_BAR].AH2Decimal;
-		
-		// DL2
-		stSysAdjValSection2[UNIT_BAR].A2DL2 = (uint16_t)stSysSaveDataSection2[UNIT_BAR].A2DL2_H << 8 | stSysSaveDataSection2[UNIT_BAR].A2DL2_L;
-		stSysAdjValSection2[UNIT_BAR].A2DL2Decimal = stSysSaveDataSection2[UNIT_BAR].A2DL2Decimal;
-		
-		// psi
-		// P-L
-		stSysAdjValSection2[UNIT_PSI].PL = (uint16_t)stSysSaveDataSection2[UNIT_PSI].PL_H << 8 | stSysSaveDataSection2[UNIT_PSI].PL_L;
-		stSysAdjValSection2[UNIT_PSI].PLDecimal = stSysSaveDataSection2[UNIT_PSI].PLDecimal;
-		
-		// P-H
-		stSysAdjValSection2[UNIT_PSI].PH = (uint16_t)stSysSaveDataSection2[UNIT_PSI].PH_H << 8 | stSysSaveDataSection2[UNIT_PSI].PH_L;
-		stSysAdjValSection2[UNIT_PSI].PHDecimal = stSysSaveDataSection2[UNIT_PSI].PHDecimal;
-		
-		// AL1
-		stSysAdjValSection2[UNIT_PSI].AL1 = (uint16_t)stSysSaveDataSection2[UNIT_PSI].AL1_H << 8 | stSysSaveDataSection2[UNIT_PSI].AL1_L;
-		stSysAdjValSection2[UNIT_PSI].AL1Decimal = stSysSaveDataSection2[UNIT_PSI].AL1Decimal;
-		
-		// AH1
-		stSysAdjValSection2[UNIT_PSI].AH1 = (uint16_t)stSysSaveDataSection2[UNIT_PSI].AH1_H << 8 | stSysSaveDataSection2[UNIT_PSI].AH1_L;
-		stSysAdjValSection2[UNIT_PSI].AH1Decimal = stSysSaveDataSection2[UNIT_PSI].AH1Decimal;
-		
-		// DL1
-		stSysAdjValSection2[UNIT_PSI].AlDL1 = (uint16_t)stSysSaveDataSection2[UNIT_PSI].AlDL1_H << 8 | stSysSaveDataSection2[UNIT_PSI].A1DL1_L;
-		stSysAdjValSection2[UNIT_PSI].A1DL1Decimal = stSysSaveDataSection2[UNIT_PSI].A1DL1Decimal;
-		
-		// AL2
-		stSysAdjValSection2[UNIT_PSI].AL2 = (uint16_t)stSysSaveDataSection2[UNIT_PSI].AL2_H << 8 | stSysSaveDataSection2[UNIT_PSI].AL2_L;
-		stSysAdjValSection2[UNIT_PSI].AL2Decimal = stSysSaveDataSection2[UNIT_PSI].AL2Decimal;
-		
-		// AH2
-		stSysAdjValSection2[UNIT_PSI].AH2 = (uint16_t)stSysSaveDataSection2[UNIT_PSI].AH2_H << 8 | stSysSaveDataSection2[UNIT_PSI].AH2_L;
-		stSysAdjValSection2[UNIT_PSI].AH2Decimal = stSysSaveDataSection2[UNIT_PSI].AH2Decimal;
-		
-		// DL2
-		stSysAdjValSection2[UNIT_PSI].A2DL2 = (uint16_t)stSysSaveDataSection2[UNIT_PSI].A2DL2_H << 8 | stSysSaveDataSection2[UNIT_PSI].A2DL2_L;
-		stSysAdjValSection2[UNIT_PSI].A2DL2Decimal = stSysSaveDataSection2[UNIT_PSI].A2DL2Decimal;
-	}
+	EEPROM_LoadAdjParams();
 	
 	// flag init
 	SET_CALCULATE_AL1_FLAG();
 	SET_CALCULATE_AH1_FLAG();
 	SET_CALCULATE_AL2_FLAG();
 	SET_CALCULATE_AH2_FLAG();
+}
+
+// Load the parameters needed by the system
+void EEPROM_LoadAdjParams(void)
+{
+	// unit
+	stSysAdjValSection1.eUnit = stSysSaveDataSection1.eUnit;
+
+	// DAP
+	stSysAdjValSection1.dap = stSysSaveDataSection1.dap;
+	
+	// fuc
+	stSysAdjValSection1.eFunc1 = stSysSaveDataSection1.eFunc1;
+	stSysAdjValSection1.eFunc2 = stSysSaveDataSection1.eFunc2;
+	
+	// bar
+	// upper limit
+	stSysAdjValSection1.stSensorAdjVal[UNIT_BAR].sensorRgeUpper = (uint16_t)stSysSaveDataSection1.stSensorRange[UNIT_BAR].sensorRgeUpper_H << 8 | stSysSaveDataSection1.stSensorRange[UNIT_BAR].sensorRgeUpper_L;
+	stSysAdjValSection1.stSensorAdjVal[UNIT_BAR].sensorRgeUpperDecimal = stSysSaveDataSection1.stSensorRange[UNIT_BAR].sensorRgeUpperDecimal;
+	// low limit
+	stSysAdjValSection1.stSensorAdjVal[UNIT_BAR].sensorRgeLower = (uint16_t)stSysSaveDataSection1.stSensorRange[UNIT_BAR].sensorRgeLower_H << 8 | stSysSaveDataSection1.stSensorRange[UNIT_BAR].sensorRgeLower_L;
+	stSysAdjValSection1.stSensorAdjVal[UNIT_BAR].sensorRgeLowerDecimal = stSysSaveDataSection1.stSensorRange[UNIT_BAR].sensorRgeLowerDecimal;
+	
+	// P-L
+	stSysAdjValSection2[UNIT_BAR].PL = (uint16_t)stSysSaveDataSection2[UNIT_BAR].PL_H << 8 | stSysSaveDataSection2[UNIT_BAR].PL_L;
+	stSysAdjValSection2[UNIT_BAR].PLDecimal = stSysSaveDataSection2[UNIT_BAR].PLDecimal;
+	
+	// P-H
+	stSysAdjValSection2[UNIT_BAR].PH = (uint16_t)stSysSaveDataSection2[UNIT_BAR].PH_H << 8 | stSysSaveDataSection2[UNIT_BAR].PH_L;
+	stSysAdjValSection2[UNIT_BAR].PHDecimal = stSysSaveDataSection2[UNIT_BAR].PHDecimal;
+	
+	// AL1
+	stSysAdjValSection2[UNIT_BAR].AL1 = (uint16_t)stSysSaveDataSection2[UNIT_BAR].AL1_H << 8 | stSysSaveDataSection2[UNIT_BAR].AL1_L;
+	stSysAdjValSection2[UNIT_BAR].AL1Decimal = stSysSaveDataSection2[UNIT_BAR].AL1Decimal;
+	
+	// AH1
+	stSysAdjValSection2[UNIT_BAR].AH1 = (uint16_t)stSysSaveDataSection2[UNIT_BAR].AH1_H << 8 | stSysSaveDataSection2[UNIT_BAR].AH1_L;
+	stSysAdjValSection2[UNIT_BAR].AH1Decimal = stSysSaveDataSection2[UNIT_BAR].AH1Decimal;
+	
+	// DL1
+	stSysAdjValSection2[UNIT_BAR].AlDL1 = (uint16_t)stSysSaveDataSection2[UNIT_BAR].AlDL1_H << 8 | stSysSaveDataSection2[UNIT_BAR].A1DL1_L;
+	stSysAdjValSection2[UNIT_BAR].A1DL1Decimal = stSysSaveDataSection2[UNIT_BAR].A1DL1Decimal;
+	
+	// AL2
+	stSysAdjValSection2[UNIT_BAR].AL2 = (uint16_t)stSysSaveDataSection2[UNIT_BAR].AL2_H << 8 | stSysSaveDataSection2[UNIT_BAR].AL2_L;
+	stSysAdjValSection2[UNIT_BAR].AL2Decimal = stSysSaveDataSection2[UNIT_BAR].AL2Decimal;
+	
+	// AH2
+	stSysAdjValSection2[UNIT_BAR].AH2 = (uint16_t)stSysSaveDataSection2[UNIT_BAR].AH2_H << 8 | stSysSaveDataSection2[UNIT_BAR].AH2_L;
+	stSysAdjValSection2[UNIT_BAR].AH2Decimal = stSysSaveDataSection2[UNIT_BAR].AH2Decimal;
+	
+	// DL2
+	stSysAdjValSection2[UNIT_BAR].A2DL2 = (uint16_t)stSysSaveDataSection2[UNIT_BAR].A2DL2_H << 8 | stSysSaveDataSection2[UNIT_BAR].A2DL2_L;
+	stSysAdjValSection2[UNIT_BAR].A2DL2Decimal = stSysSaveDataSection2[UNIT_BAR].A2DL2Decimal;
+	
+	// psi
+	// upper limit
+	stSysAdjValSection1.stSensorAdjVal[UNIT_PSI].sensorRgeUpper = (uint16_t)stSysSaveDataSection1.stSensorRange[UNIT_PSI].sensorRgeUpper_H << 8 | stSysSaveDataSection1.stSensorRange[UNIT_PSI].sensorRgeUpper_L;
+	stSysAdjValSection1.stSensorAdjVal[UNIT_PSI].sensorRgeUpperDecimal = stSysSaveDataSection1.stSensorRange[UNIT_PSI].sensorRgeUpperDecimal;
+	// low limit
+	stSysAdjValSection1.stSensorAdjVal[UNIT_PSI].sensorRgeLower = (uint16_t)stSysSaveDataSection1.stSensorRange[UNIT_PSI].sensorRgeLower_H << 8 | stSysSaveDataSection1.stSensorRange[UNIT_PSI].sensorRgeLower_L;
+	stSysAdjValSection1.stSensorAdjVal[UNIT_PSI].sensorRgeLowerDecimal = stSysSaveDataSection1.stSensorRange[UNIT_PSI].sensorRgeLowerDecimal;
+	
+	// P-L
+	stSysAdjValSection2[UNIT_PSI].PL = (uint16_t)stSysSaveDataSection2[UNIT_PSI].PL_H << 8 | stSysSaveDataSection2[UNIT_PSI].PL_L;
+	stSysAdjValSection2[UNIT_PSI].PLDecimal = stSysSaveDataSection2[UNIT_PSI].PLDecimal;
+	
+	// P-H
+	stSysAdjValSection2[UNIT_PSI].PH = (uint16_t)stSysSaveDataSection2[UNIT_PSI].PH_H << 8 | stSysSaveDataSection2[UNIT_PSI].PH_L;
+	stSysAdjValSection2[UNIT_PSI].PHDecimal = stSysSaveDataSection2[UNIT_PSI].PHDecimal;
+	
+	// AL1
+	stSysAdjValSection2[UNIT_PSI].AL1 = (uint16_t)stSysSaveDataSection2[UNIT_PSI].AL1_H << 8 | stSysSaveDataSection2[UNIT_PSI].AL1_L;
+	stSysAdjValSection2[UNIT_PSI].AL1Decimal = stSysSaveDataSection2[UNIT_PSI].AL1Decimal;
+	
+	// AH1
+	stSysAdjValSection2[UNIT_PSI].AH1 = (uint16_t)stSysSaveDataSection2[UNIT_PSI].AH1_H << 8 | stSysSaveDataSection2[UNIT_PSI].AH1_L;
+	stSysAdjValSection2[UNIT_PSI].AH1Decimal = stSysSaveDataSection2[UNIT_PSI].AH1Decimal;
+	
+	// DL1
+	stSysAdjValSection2[UNIT_PSI].AlDL1 = (uint16_t)stSysSaveDataSection2[UNIT_PSI].AlDL1_H << 8 | stSysSaveDataSection2[UNIT_PSI].A1DL1_L;
+	stSysAdjValSection2[UNIT_PSI].A1DL1Decimal = stSysSaveDataSection2[UNIT_PSI].A1DL1Decimal;
+	
+	// AL2
+	stSysAdjValSection2[UNIT_PSI].AL2 = (uint16_t)stSysSaveDataSection2[UNIT_PSI].AL2_H << 8 | stSysSaveDataSection2[UNIT_PSI].AL2_L;
+	stSysAdjValSection2[UNIT_PSI].AL2Decimal = stSysSaveDataSection2[UNIT_PSI].AL2Decimal;
+	
+	// AH2
+	stSysAdjValSection2[UNIT_PSI].AH2 = (uint16_t)stSysSaveDataSection2[UNIT_PSI].AH2_H << 8 | stSysSaveDataSection2[UNIT_PSI].AH2_L;
+	stSysAdjValSection2[UNIT_PSI].AH2Decimal = stSysSaveDataSection2[UNIT_PSI].AH2Decimal;
+	
+	// DL2
+	stSysAdjValSection2[UNIT_PSI].A2DL2 = (uint16_t)stSysSaveDataSection2[UNIT_PSI].A2DL2_H << 8 | stSysSaveDataSection2[UNIT_PSI].A2DL2_L;
+	stSysAdjValSection2[UNIT_PSI].A2DL2Decimal = stSysSaveDataSection2[UNIT_PSI].A2DL2Decimal;
 }
 

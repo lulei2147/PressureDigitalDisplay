@@ -61,6 +61,8 @@ typedef struct{
 	uint8_t DL2Decimal;
 }STDataToBeSaved;
 /* Private define ------------------------------------------------------------*/
+#define CMD_GET_PARAM_ID                                          (0xA0)
+#define CMD_SET_PARAM_ID                                          (0xA1)
 /* Private function prototypes -----------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
@@ -77,7 +79,7 @@ void CmdFromHostComputerHandler(void)
 		
 		SPI_CSB_ENABLE();
 		
-		if(usartRevCmdBuffer[0] == 0xA0)
+		if(usartRevCmdBuffer[0] == CMD_GET_PARAM_ID)
 		{
 //				spiRevData = SPI_WriteByte(0x80);
 //				spiRevData = SPI_WriteByte(usartRevCmdBuffer[1]);
@@ -87,10 +89,10 @@ void CmdFromHostComputerHandler(void)
 			Usart_WriteData(&cmdHeader, 1);
 			
 			// lower and upper limit
-			Usart_WriteData((uint8_t *)&stSysAdjValSection1.sensorRgeUpper, 2);
-			Usart_WriteData(&stSysAdjValSection1.sensorRgeUpperDecimal, 1);
-			Usart_WriteData((uint8_t *)&stSysAdjValSection1.sensorRgeLower, 2);
-			Usart_WriteData(&stSysAdjValSection1.sensorRgeLowerDecimal, 1);
+			Usart_WriteData((uint8_t *)&stSysAdjValSection1.stSensorAdjVal[stSysAdjValSection1.eUnit].sensorRgeUpper, 2);
+			Usart_WriteData(&stSysAdjValSection1.stSensorAdjVal[stSysAdjValSection1.eUnit].sensorRgeUpperDecimal, 1);
+			Usart_WriteData((uint8_t *)&stSysAdjValSection1.stSensorAdjVal[stSysAdjValSection1.eUnit].sensorRgeLower, 2);
+			Usart_WriteData(&stSysAdjValSection1.stSensorAdjVal[stSysAdjValSection1.eUnit].sensorRgeLowerDecimal, 1);
 			// unit
 			Usart_WriteData((uint8_t *)&stSysAdjValSection1.eUnit, 1);
 			// DAP
@@ -126,7 +128,7 @@ void CmdFromHostComputerHandler(void)
 			printf("\r\n");
 			//printf("cmd: 0x%X,   4.received data: 0x%X \n", usartRevCmdBuffer[1], spiRevData);
 		}
-		else if(usartRevCmdBuffer[0] == 0xA1)
+		else if(usartRevCmdBuffer[0] == CMD_SET_PARAM_ID)
 		{
 //			SPI_WriteByte(0x00);
 //			SPI_WriteByte(0x30);
@@ -144,40 +146,60 @@ void CmdFromHostComputerHandler(void)
 			uint8_t bitMapHigh = usartRevCmdBuffer[2];
 			uint8_t unit = stSysAdjValSection1.eUnit;
 			
-			// Sensor Range Lower
-			if(bitMapLow & _BIT0)
-			{
-				// data to be saved
-				stSysSaveDataSection1.sensorRgeLower_H = usartRevCmdBuffer[3];
-				stSysSaveDataSection1.sensorRgeLower_L = usartRevCmdBuffer[4];
-				stSysSaveDataSection1.sensorRgeLowerDecimal = usartRevCmdBuffer[5];
-				// adjust
-				stSysAdjValSection1.sensorRgeLower = (uint16_t)stSysSaveDataSection1.sensorRgeLower_H << 8 | stSysSaveDataSection1.sensorRgeLower_L;
-				stSysAdjValSection1.sensorRgeLowerDecimal = stSysSaveDataSection1.sensorRgeLowerDecimal;
-				// save to eeprom
-				EEPROM_WriteBytes(eSENSOR_RANGE_LOWER_ADDR, &stSysSaveDataSection1.sensorRgeLower_H, 2);
-				EEPROM_WriteBytes(eSENSOR_RANGE_LOWER_DECIMAL_ADDR, &stSysSaveDataSection1.sensorRgeLowerDecimal, 1);
-			}
-			// Sensor Range Upper
-			if(bitMapLow & _BIT1)
-			{
-				// data to be saved
-				stSysSaveDataSection1.sensorRgeUpper_H = usartRevCmdBuffer[6];
-				stSysSaveDataSection1.sensorRgeUpper_L = usartRevCmdBuffer[7];
-				stSysSaveDataSection1.sensorRgeUpperDecimal = usartRevCmdBuffer[8];
-				// adjust
-				stSysAdjValSection1.sensorRgeUpper = (uint16_t)stSysSaveDataSection1.sensorRgeUpper_H << 8 | stSysSaveDataSection1.sensorRgeUpper_L;
-				stSysAdjValSection1.sensorRgeUpperDecimal = stSysSaveDataSection1.sensorRgeUpperDecimal;
-				// save to eeprom
-				EEPROM_WriteBytes(eSENSOR_RANGE_UPPER_ADDR, &stSysSaveDataSection1.sensorRgeUpper_H, 2);
-				EEPROM_WriteBytes(eSENSOR_RANGE_UPPER_DECIMAL_ADDR, &stSysSaveDataSection1.sensorRgeUpperDecimal, 1);
-			}
 			// Sensor Unit
 			if(bitMapLow & _BIT2)
 			{
 				stSysSaveDataSection1.eUnit = (EnumValUnit)usartRevCmdBuffer[9];
 				stSysAdjValSection1.eUnit = stSysSaveDataSection1.eUnit;
 				EEPROM_WriteBytes(eSENSOR_P_UNIT_ADDR, (uint8_t *)&stSysAdjValSection1.eUnit, 1);
+				
+				unit = stSysAdjValSection1.eUnit;
+			}
+			
+			// Sensor Range Lower
+			if(bitMapLow & _BIT0)
+			{
+				// data to be saved
+				stSysSaveDataSection1.stSensorRange[unit].sensorRgeLower_H = usartRevCmdBuffer[3];
+				stSysSaveDataSection1.stSensorRange[unit].sensorRgeLower_L = usartRevCmdBuffer[4];
+				stSysSaveDataSection1.stSensorRange[unit].sensorRgeLowerDecimal = usartRevCmdBuffer[5];
+				// adjust
+				stSysAdjValSection1.stSensorAdjVal[unit].sensorRgeLower = (uint16_t)stSysSaveDataSection1.stSensorRange[unit].sensorRgeLower_H << 8 | stSysSaveDataSection1.stSensorRange[unit].sensorRgeLower_L;
+				stSysAdjValSection1.stSensorAdjVal[unit].sensorRgeLowerDecimal = stSysSaveDataSection1.stSensorRange[unit].sensorRgeLowerDecimal;
+
+				if(unit == UNIT_PSI)
+				{
+					EEPROM_WriteBytes(ePSI_SENSOR_RANGE_LOWER_ADDR, &stSysSaveDataSection1.stSensorRange[UNIT_PSI].sensorRgeLower_H, 2);
+					EEPROM_WriteBytes(ePSI_SENSOR_RANGE_LOWER_DECIMAL_ADDR, &stSysSaveDataSection1.stSensorRange[UNIT_PSI].sensorRgeLowerDecimal, 1);	
+				}
+				else
+				{
+					EEPROM_WriteBytes(eBAR_SENSOR_RANGE_LOWER_ADDR, &stSysSaveDataSection1.stSensorRange[UNIT_BAR].sensorRgeLower_H, 2);
+					EEPROM_WriteBytes(eBAR_SENSOR_RANGE_LOWER_DECIMAL_ADDR, &stSysSaveDataSection1.stSensorRange[UNIT_BAR].sensorRgeLowerDecimal, 1);
+				}
+			}
+			// Sensor Range Upper
+			if(bitMapLow & _BIT1)
+			{
+				// data to be saved
+				stSysSaveDataSection1.stSensorRange[unit].sensorRgeUpper_H = usartRevCmdBuffer[6];
+				stSysSaveDataSection1.stSensorRange[unit].sensorRgeUpper_L = usartRevCmdBuffer[7];
+				stSysSaveDataSection1.stSensorRange[unit].sensorRgeUpperDecimal = usartRevCmdBuffer[8];
+				// adjust
+				stSysAdjValSection1.stSensorAdjVal[unit].sensorRgeUpper = (uint16_t)stSysSaveDataSection1.stSensorRange[unit].sensorRgeUpper_H << 8 | stSysSaveDataSection1.stSensorRange[unit].sensorRgeUpper_L;
+				stSysAdjValSection1.stSensorAdjVal[unit].sensorRgeUpperDecimal = stSysSaveDataSection1.stSensorRange[unit].sensorRgeUpperDecimal;
+
+				if(unit == UNIT_PSI)
+				{
+					EEPROM_WriteBytes(ePSI_SENSOR_RANGE_UPPER_ADDR, &stSysSaveDataSection1.stSensorRange[UNIT_PSI].sensorRgeUpper_H, 2);
+					EEPROM_WriteBytes(ePSI_SENSOR_RANGE_UPPER_DECIMAL_ADDR, &stSysSaveDataSection1.stSensorRange[UNIT_PSI].sensorRgeUpperDecimal, 1);
+
+				}
+				else
+				{
+					EEPROM_WriteBytes(eBAR_SENSOR_RANGE_UPPER_ADDR, &stSysSaveDataSection1.stSensorRange[UNIT_BAR].sensorRgeUpper_H, 2);
+					EEPROM_WriteBytes(eBAR_SENSOR_RANGE_UPPER_DECIMAL_ADDR, &stSysSaveDataSection1.stSensorRange[UNIT_BAR].sensorRgeUpperDecimal, 1);
+				}
 			}
 			// DAP
 			if(bitMapLow & _BIT3)
@@ -189,39 +211,43 @@ void CmdFromHostComputerHandler(void)
 			// P-L
 			if(bitMapLow & _BIT4)
 			{
+				stSysSaveDataSection2[unit].PL_H = usartRevCmdBuffer[11];
+				stSysSaveDataSection2[unit].PL_L = usartRevCmdBuffer[12];
+				stSysSaveDataSection2[unit].PLDecimal = usartRevCmdBuffer[13];
+					
+				stSysAdjValSection2[unit].PL = (uint16_t)stSysSaveDataSection2[unit].PL_H << 8 | stSysSaveDataSection2[unit].PL_L;
+				stSysAdjValSection2[unit].PLDecimal = stSysSaveDataSection2[unit].PLDecimal;
+				
 				if(unit == UNIT_PSI)
 				{
-				
+					EEPROM_WriteBytes(ePSI_P_L_ADDR, &stSysSaveDataSection2[UNIT_PSI].PL_H, 2);
+					EEPROM_WriteBytes(ePSI_P_L_DECIMAL_ADDR, &stSysSaveDataSection2[UNIT_PSI].PLDecimal, 1);
 				}
 				else
 				{
-					stSysSaveDataSection2[UNIT_BAR].PL_H = usartRevCmdBuffer[11];
-					stSysSaveDataSection2[UNIT_BAR].PL_L = usartRevCmdBuffer[12];
-					stSysSaveDataSection2[UNIT_BAR].PLDecimal = usartRevCmdBuffer[13];
 					EEPROM_WriteBytes(eBAR_P_L_ADDR, &stSysSaveDataSection2[UNIT_BAR].PL_H, 2);
 					EEPROM_WriteBytes(eBAR_P_L_DECIMAL_ADDR, &stSysSaveDataSection2[UNIT_BAR].PLDecimal, 1);
-					
-					stSysAdjValSection2[UNIT_BAR].PL = (uint16_t)stSysSaveDataSection2[UNIT_BAR].PL_H << 8 | stSysSaveDataSection2[UNIT_BAR].PL_L;
-					stSysAdjValSection2[UNIT_BAR].PLDecimal = stSysSaveDataSection2[UNIT_BAR].PLDecimal;
 				}
 			}
 			// P-H
 			if(bitMapLow & _BIT5)
 			{
+				stSysSaveDataSection2[unit].PH_H = usartRevCmdBuffer[14];
+				stSysSaveDataSection2[unit].PH_L = usartRevCmdBuffer[15];
+				stSysSaveDataSection2[unit].PHDecimal = usartRevCmdBuffer[16];
+
+				stSysAdjValSection2[unit].PH = (uint16_t)stSysSaveDataSection2[unit].PH_H << 8 | stSysSaveDataSection2[unit].PH_L;
+				stSysAdjValSection2[unit].PHDecimal = stSysSaveDataSection2[unit].PHDecimal;
+
 				if(unit == UNIT_PSI)
 				{
-				
+					EEPROM_WriteBytes(ePSI_P_H_ADDR, &stSysSaveDataSection2[UNIT_PSI].PH_H, 2);
+					EEPROM_WriteBytes(ePSI_P_H_DECIMAL_ADDR, &stSysSaveDataSection2[UNIT_PSI].PHDecimal, 1);
 				}
 				else
 				{
-					stSysSaveDataSection2[UNIT_BAR].PH_H = usartRevCmdBuffer[14];
-					stSysSaveDataSection2[UNIT_BAR].PH_L = usartRevCmdBuffer[15];
-					stSysSaveDataSection2[UNIT_BAR].PHDecimal = usartRevCmdBuffer[16];
 					EEPROM_WriteBytes(eBAR_P_H_ADDR, &stSysSaveDataSection2[UNIT_BAR].PH_H, 2);
 					EEPROM_WriteBytes(eBAR_P_H_DECIMAL_ADDR, &stSysSaveDataSection2[UNIT_BAR].PHDecimal, 1);
-					
-					stSysAdjValSection2[UNIT_BAR].PH = (uint16_t)stSysSaveDataSection2[UNIT_BAR].PH_H << 8 | stSysSaveDataSection2[UNIT_BAR].PH_L;
-					stSysAdjValSection2[UNIT_BAR].PHDecimal = stSysSaveDataSection2[UNIT_BAR].PHDecimal;
 				}
 			}
 			// Func1
@@ -235,58 +261,64 @@ void CmdFromHostComputerHandler(void)
 			// AL1
 			if(bitMapLow & _BIT7)
 			{
+				stSysSaveDataSection2[unit].AL1_H = usartRevCmdBuffer[18];
+				stSysSaveDataSection2[unit].AL1_L = usartRevCmdBuffer[19];
+				stSysSaveDataSection2[unit].AL1Decimal = usartRevCmdBuffer[20];
+				
+				stSysAdjValSection2[unit].AL1 = (uint16_t)stSysSaveDataSection2[unit].AL1_H << 8 | stSysSaveDataSection2[unit].AL1_L;
+				stSysAdjValSection2[unit].AL1Decimal = stSysSaveDataSection2[unit].AL1Decimal;
+
 				if(unit == UNIT_PSI)
 				{
-				
+					EEPROM_WriteBytes(ePSI_A1_L_ADDR, &stSysSaveDataSection2[UNIT_PSI].AL1_H, 2);
+					EEPROM_WriteBytes(ePSI_A1_L_DECIMAL_ADDR, &stSysSaveDataSection2[UNIT_PSI].AL1Decimal, 1);
 				}
 				else
 				{
-					stSysSaveDataSection2[UNIT_BAR].AL1_H = usartRevCmdBuffer[18];
-					stSysSaveDataSection2[UNIT_BAR].AL1_L = usartRevCmdBuffer[19];
-					stSysSaveDataSection2[UNIT_BAR].AL1Decimal = usartRevCmdBuffer[20];
 					EEPROM_WriteBytes(eBAR_A1_L_ADDR, &stSysSaveDataSection2[UNIT_BAR].AL1_H, 2);
-					EEPROM_WriteBytes(eBAR_A1_L_DECIMAL_ADDR, &stSysSaveDataSection2[UNIT_BAR].AL1Decimal, 1);
-					
-					stSysAdjValSection2[UNIT_BAR].AL1 = (uint16_t)stSysSaveDataSection2[UNIT_BAR].AL1_H << 8 | stSysSaveDataSection2[UNIT_BAR].AL1_L;
-					stSysAdjValSection2[UNIT_BAR].AL1Decimal = stSysSaveDataSection2[UNIT_BAR].AL1Decimal;
+					EEPROM_WriteBytes(eBAR_A1_L_DECIMAL_ADDR, &stSysSaveDataSection2[UNIT_BAR].AL1Decimal, 1);	
 				}
 			}
 			// AH1
 			if(bitMapHigh & _BIT0)
 			{
+				stSysSaveDataSection2[unit].AH1_H = usartRevCmdBuffer[21];
+				stSysSaveDataSection2[unit].AH1_L = usartRevCmdBuffer[22];
+				stSysSaveDataSection2[unit].AH1Decimal = usartRevCmdBuffer[23];
+				
+				stSysAdjValSection2[unit].AH1 = (uint16_t)stSysSaveDataSection2[unit].AH1_H << 8 | stSysSaveDataSection2[unit].AH1_L;
+				stSysAdjValSection2[unit].AH1Decimal = stSysSaveDataSection2[unit].AH1Decimal;
+
 				if(unit == UNIT_PSI)
 				{
-				
+					EEPROM_WriteBytes(ePSI_A1_H_ADDR, &stSysSaveDataSection2[UNIT_PSI].AH1_H, 2);
+					EEPROM_WriteBytes(ePSI_A1_H_DECIMAL_ADDR, &stSysSaveDataSection2[UNIT_PSI].AH1Decimal, 1);
 				}
 				else
 				{
-					stSysSaveDataSection2[UNIT_BAR].AH1_H = usartRevCmdBuffer[21];
-					stSysSaveDataSection2[UNIT_BAR].AH1_L = usartRevCmdBuffer[22];
-					stSysSaveDataSection2[UNIT_BAR].AH1Decimal = usartRevCmdBuffer[23];
 					EEPROM_WriteBytes(eBAR_A1_H_ADDR, &stSysSaveDataSection2[UNIT_BAR].AH1_H, 2);
 					EEPROM_WriteBytes(eBAR_A1_H_DECIMAL_ADDR, &stSysSaveDataSection2[UNIT_BAR].AH1Decimal, 1);
-					
-					stSysAdjValSection2[UNIT_BAR].AH1 = (uint16_t)stSysSaveDataSection2[UNIT_BAR].AH1_H << 8 | stSysSaveDataSection2[UNIT_BAR].AH1_L;
-					stSysAdjValSection2[UNIT_BAR].AH1Decimal = stSysSaveDataSection2[UNIT_BAR].AH1Decimal;
 				}
 			}
 			// DL1
 			if(bitMapHigh & _BIT1)
 			{
+				stSysSaveDataSection2[unit].AlDL1_H = usartRevCmdBuffer[24];
+				stSysSaveDataSection2[unit].A1DL1_L = usartRevCmdBuffer[25];
+				stSysSaveDataSection2[unit].A1DL1Decimal = usartRevCmdBuffer[26];
+				
+				stSysAdjValSection2[unit].AlDL1 = (uint16_t)stSysSaveDataSection2[unit].AlDL1_H << 8 | stSysSaveDataSection2[unit].A1DL1_L;
+				stSysAdjValSection2[unit].A1DL1Decimal = stSysSaveDataSection2[unit].A1DL1Decimal;
+
 				if(unit == UNIT_PSI)
 				{
-				
+					EEPROM_WriteBytes(ePSI_A1_DL1_ADDR, &stSysSaveDataSection2[UNIT_PSI].AlDL1_H, 2);
+					EEPROM_WriteBytes(ePSI_A1_DL1_DECIMAL_ADDR, &stSysSaveDataSection2[UNIT_PSI].A1DL1Decimal, 1);	
 				}
 				else
 				{
-					stSysSaveDataSection2[UNIT_BAR].AlDL1_H = usartRevCmdBuffer[24];
-					stSysSaveDataSection2[UNIT_BAR].A1DL1_L = usartRevCmdBuffer[25];
-					stSysSaveDataSection2[UNIT_BAR].A1DL1Decimal = usartRevCmdBuffer[26];
 					EEPROM_WriteBytes(eBAR_A1_DL1_ADDR, &stSysSaveDataSection2[UNIT_BAR].AlDL1_H, 2);
-					EEPROM_WriteBytes(eBAR_A1_DL1_DECIMAL_ADDR, &stSysSaveDataSection2[UNIT_BAR].A1DL1Decimal, 1);
-					
-					stSysAdjValSection2[UNIT_BAR].AlDL1 = (uint16_t)stSysSaveDataSection2[UNIT_BAR].AlDL1_H << 8 | stSysSaveDataSection2[UNIT_BAR].A1DL1_L;
-					stSysAdjValSection2[UNIT_BAR].A1DL1Decimal = stSysSaveDataSection2[UNIT_BAR].A1DL1Decimal;
+					EEPROM_WriteBytes(eBAR_A1_DL1_DECIMAL_ADDR, &stSysSaveDataSection2[UNIT_BAR].A1DL1Decimal, 1);	
 				}
 			}
 			// Func2
@@ -300,58 +332,64 @@ void CmdFromHostComputerHandler(void)
 			// AL2
 			if(bitMapHigh & _BIT3)
 			{		
+				stSysSaveDataSection2[unit].AL2_H = usartRevCmdBuffer[28];
+				stSysSaveDataSection2[unit].AL2_L = usartRevCmdBuffer[29];
+				stSysSaveDataSection2[unit].AL2Decimal = usartRevCmdBuffer[30];
+				
+				stSysAdjValSection2[unit].AL2 = (uint16_t)stSysSaveDataSection2[unit].AL2_H << 8 | stSysSaveDataSection2[unit].AL2_L;
+				stSysAdjValSection2[unit].AL2Decimal = stSysSaveDataSection2[unit].AL2Decimal;
+				
 				if(unit == UNIT_PSI)
 				{
-				
+					EEPROM_WriteBytes(ePSI_A2_L_ADDR, &stSysSaveDataSection2[UNIT_PSI].AL2_H, 2);
+					EEPROM_WriteBytes(ePSI_A2_L_DECIMAL_ADDR, &stSysSaveDataSection2[UNIT_PSI].AL2Decimal, 1);
 				}
 				else
 				{
-					stSysSaveDataSection2[UNIT_BAR].AL2_H = usartRevCmdBuffer[28];
-					stSysSaveDataSection2[UNIT_BAR].AL2_L = usartRevCmdBuffer[29];
-					stSysSaveDataSection2[UNIT_BAR].AL2Decimal = usartRevCmdBuffer[30];
 					EEPROM_WriteBytes(eBAR_A2_L_ADDR, &stSysSaveDataSection2[UNIT_BAR].AL2_H, 2);
 					EEPROM_WriteBytes(eBAR_A2_L_DECIMAL_ADDR, &stSysSaveDataSection2[UNIT_BAR].AL2Decimal, 1);
-					
-					stSysAdjValSection2[UNIT_BAR].AL2 = (uint16_t)stSysSaveDataSection2[UNIT_BAR].AL2_H << 8 | stSysSaveDataSection2[UNIT_BAR].AL2_L;
-					stSysAdjValSection2[UNIT_BAR].AL2Decimal = stSysSaveDataSection2[UNIT_BAR].AL2Decimal;
 				}
 			}
 			// AH2
 			if(bitMapHigh & _BIT4)
 			{
+				stSysSaveDataSection2[unit].AH2_H = usartRevCmdBuffer[31];
+				stSysSaveDataSection2[unit].AH2_L = usartRevCmdBuffer[32];
+				stSysSaveDataSection2[unit].AH2Decimal = usartRevCmdBuffer[33];
+				
+				stSysAdjValSection2[unit].AH2 = (uint16_t)stSysSaveDataSection2[unit].AH2_H << 8 | stSysSaveDataSection2[unit].AH2_L;
+				stSysAdjValSection2[unit].AH2Decimal = stSysSaveDataSection2[unit].AH2Decimal;
+				
 				if(unit == UNIT_PSI)
 				{
-				
+					EEPROM_WriteBytes(ePSI_A2_H_ADDR, &stSysSaveDataSection2[UNIT_PSI].AH2_H, 2);
+					EEPROM_WriteBytes(ePSI_A2_H_DECIMAL_ADDR, &stSysSaveDataSection2[UNIT_PSI].AH2Decimal, 1);		
 				}
 				else
 				{
-					stSysSaveDataSection2[UNIT_BAR].AH2_H = usartRevCmdBuffer[31];
-					stSysSaveDataSection2[UNIT_BAR].AH2_L = usartRevCmdBuffer[32];
-					stSysSaveDataSection2[UNIT_BAR].AH2Decimal = usartRevCmdBuffer[33];
 					EEPROM_WriteBytes(eBAR_A2_H_ADDR, &stSysSaveDataSection2[UNIT_BAR].AH2_H, 2);
 					EEPROM_WriteBytes(eBAR_A2_H_DECIMAL_ADDR, &stSysSaveDataSection2[UNIT_BAR].AH2Decimal, 1);
-					
-					stSysAdjValSection2[UNIT_BAR].AH2 = (uint16_t)stSysSaveDataSection2[UNIT_BAR].AH2_H << 8 | stSysSaveDataSection2[UNIT_BAR].AH2_L;
-					stSysAdjValSection2[UNIT_BAR].AH2Decimal = stSysSaveDataSection2[UNIT_BAR].AH2Decimal;
 				}
 			}
 			// DL2
 			if(bitMapHigh & _BIT5)
 			{		
+				stSysSaveDataSection2[unit].A2DL2_H = usartRevCmdBuffer[34];
+				stSysSaveDataSection2[unit].A2DL2_L = usartRevCmdBuffer[35];
+				stSysSaveDataSection2[unit].A2DL2Decimal = usartRevCmdBuffer[36];
+				
+				stSysAdjValSection2[unit].A2DL2 = (uint16_t)stSysSaveDataSection2[unit].A2DL2_H << 8 | stSysSaveDataSection2[unit].A2DL2_L;
+				stSysAdjValSection2[unit].A2DL2Decimal = stSysSaveDataSection2[unit].A2DL2Decimal;
+				
 				if(unit == UNIT_PSI)
 				{
-				
+					EEPROM_WriteBytes(ePSI_A2_DL2_ADDR, &stSysSaveDataSection2[UNIT_PSI].A2DL2_H, 2);
+					EEPROM_WriteBytes(ePSI_A2_DL2_DECIMAL_ADDR, &stSysSaveDataSection2[UNIT_PSI].A2DL2Decimal, 1);
 				}
 				else
 				{
-					stSysSaveDataSection2[UNIT_BAR].A2DL2_H = usartRevCmdBuffer[34];
-					stSysSaveDataSection2[UNIT_BAR].A2DL2_L = usartRevCmdBuffer[35];
-					stSysSaveDataSection2[UNIT_BAR].A2DL2Decimal = usartRevCmdBuffer[36];
 					EEPROM_WriteBytes(eBAR_A2_DL2_ADDR, &stSysSaveDataSection2[UNIT_BAR].A2DL2_H, 2);
 					EEPROM_WriteBytes(eBAR_A2_DL2_DECIMAL_ADDR, &stSysSaveDataSection2[UNIT_BAR].A2DL2Decimal, 1);
-					
-					stSysAdjValSection2[UNIT_BAR].A2DL2 = (uint16_t)stSysSaveDataSection2[UNIT_BAR].A2DL2_H << 8 | stSysSaveDataSection2[UNIT_BAR].A2DL2_L;
-					stSysAdjValSection2[UNIT_BAR].A2DL2Decimal = stSysSaveDataSection2[UNIT_BAR].A2DL2Decimal;
 				}
 			}
 		}
