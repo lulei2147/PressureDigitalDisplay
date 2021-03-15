@@ -15,10 +15,12 @@
 #include "user_menu.h"
 #include "eeprom.h"
 #include "math.h"
+#include "spi.h"
+#include "receiveCmd.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
-#define LED_SEGMENT_DISPLAYS_REFRESH_TIME																	(50) // ms
+#define LED_SEGMENT_DISPLAYS_REFRESH_TIME																	(1000) // ms
 
 #define PRESSURE_RANGE_UPPER																							(1.6f)
 #define PRESSURE_RANGE_LOWER																							(0)
@@ -130,11 +132,13 @@ void LED_SegmentDisplay_Handler(void)
 	{
 		if(SegDispTimeCounter >= LED_SEGMENT_DISPLAYS_REFRESH_TIME)
 		{
-			float tempPreVal = 0;
 			uint8_t i = 0;
 			double preSum = 0;
-			
+
 			SegDispTimeCounter = 0;
+			
+#if 0 // STM32 16bit ADC			
+			float tempPreVal = 0;
 			
 			ADC_Vol =(float)(ADC_ConvertedValue & 0xffc) * 3.3f / 4095;
 		
@@ -159,6 +163,44 @@ void LED_SegmentDisplay_Handler(void)
 			// Calculate the average value based on the historical pressurel value
 			dapCalcPreBufIndex %= stSysAdjValSection1.dap;
 			dapCalcPreBuffer[dapCalcPreBufIndex] = tempPreVal;
+#else // NSA2860
+			uint8_t adc_L = 0;
+			uint8_t adc_M = 0;
+			uint8_t adc_H = 0;
+			uint32_t adcVal = 0;
+			double voltage = 0;
+			
+			SPI_CSB_ENABLE();
+			
+			SPI_WriteByte(0x80);
+			SPI_WriteByte(0x06);
+			adc_H = SPI_WriteByte(0xFF);
+			
+			SPI_WriteByte(0x80);
+			SPI_WriteByte(0x07);
+			adc_M = SPI_WriteByte(0xFF);
+			
+			SPI_WriteByte(0x80);
+			SPI_WriteByte(0x08);
+			adc_L = SPI_WriteByte(0xFF);
+			
+			SPI_CSB_DISABLE();
+			
+			if(adc_H & 0x80)
+			{
+				adcVal = (((uint32_t)adc_H) << 16) | (((uint32_t)adc_M) << 8) | adc_L;
+				voltage = 0 - ((~(adcVal & 0x7fffff)  + 1) * 2500 / pow(2, 23) / 1000.0f);
+			}
+			else
+			{
+				adcVal = (((uint32_t)adc_H) << 16) | (((uint32_t)adc_M) << 8) | adc_L;
+				voltage = (double)adcVal * 2500 / pow(2, 23) / 1000.0f;
+			}
+			
+			// Calculate the average value based on the historical pressurel value
+			dapCalcPreBufIndex %= stSysAdjValSection1.dap;
+			dapCalcPreBuffer[dapCalcPreBufIndex] = voltage;
+#endif
 			
 			if(dapCalcPreBufIndex == (stSysAdjValSection1.dap - 1))
 			{

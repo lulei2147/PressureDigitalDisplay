@@ -191,8 +191,9 @@ void USART2_IRQHandler(void)
 //发送一个字节数据
 void USART_SendByte(USART_TypeDef* USARTx,u8 Data)
 {            
+	// USART_ClearFlag(USARTx, USART_FLAG_TC);
 	USART_SendData(USARTx, Data);
-	while( USART_GetFlagStatus(USARTx, USART_FLAG_TC) == RESET );
+	while( USART_GetFlagStatus(USARTx, USART_FLAG_TXE) == RESET );
 }
 
 //USARTx 发送一个字符串

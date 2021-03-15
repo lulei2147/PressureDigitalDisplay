@@ -18,48 +18,48 @@
 #include "math.h"
 
 /* Private typedef -----------------------------------------------------------*/
-typedef struct{
-	uint8_t lowLimit_H;
-	uint8_t lowLimit_L;
-	uint8_t lowLimitDecimal;
-	
-	uint8_t upperLimit_H;
-	uint8_t upperLimit_L;
-	uint8_t upperLimitDecimal;
-	
-	uint8_t Unit;
-	uint8_t dap;
-	
-	uint8_t PL_H;
-	uint8_t PL_L;
-	uint8_t PLDecimal;
-	
-	uint8_t PH_H;
-	uint8_t PH_L;
-	uint8_t PHDecimal;
-	
-	uint8_t Func1;
-	uint8_t AL1_H;
-	uint8_t AL1_L;
-	uint8_t AL1Decimal;
-	uint8_t AH1_H;
-	uint8_t AH1_L;
-	uint8_t AH1Decimal;
-	uint8_t DL1_H;
-	uint8_t DL1_L;
-	uint8_t DL1Decimal;
-	
-	uint8_t Func2;
-	uint8_t AL2_H;
-	uint8_t AL2_L;
-	uint8_t AL2Decimal;
-	uint8_t AH2_H;
-	uint8_t AH2_L;
-	uint8_t AH2Decimal;
-	uint8_t DL2_H;
-	uint8_t DL2_L;
-	uint8_t DL2Decimal;
-}STDataToBeSaved;
+//typedef struct{
+//	uint8_t lowLimit_H;
+//	uint8_t lowLimit_L;
+//	uint8_t lowLimitDecimal;
+//	
+//	uint8_t upperLimit_H;
+//	uint8_t upperLimit_L;
+//	uint8_t upperLimitDecimal;
+//	
+//	uint8_t Unit;
+//	uint8_t dap;
+//	
+//	uint8_t PL_H;
+//	uint8_t PL_L;
+//	uint8_t PLDecimal;
+//	
+//	uint8_t PH_H;
+//	uint8_t PH_L;
+//	uint8_t PHDecimal;
+//	
+//	uint8_t Func1;
+//	uint8_t AL1_H;
+//	uint8_t AL1_L;
+//	uint8_t AL1Decimal;
+//	uint8_t AH1_H;
+//	uint8_t AH1_L;
+//	uint8_t AH1Decimal;
+//	uint8_t DL1_H;
+//	uint8_t DL1_L;
+//	uint8_t DL1Decimal;
+//	
+//	uint8_t Func2;
+//	uint8_t AL2_H;
+//	uint8_t AL2_L;
+//	uint8_t AL2Decimal;
+//	uint8_t AH2_H;
+//	uint8_t AH2_L;
+//	uint8_t AH2Decimal;
+//	uint8_t DL2_H;
+//	uint8_t DL2_L;
+//	uint8_t DL2Decimal;
+//}STDataToBeSaved;
 /* Private define ------------------------------------------------------------*/
 #define CMD_GET_PARAM_ID                                          (0xA0)
 #define CMD_SET_PARAM_ID                                          (0xA1)
@@ -67,7 +67,8 @@ typedef struct{
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 uint8_t spiRevData = 0;
-STDataToBeSaved stDataToBeSaved;
+uint8_t revCmdFlag = 0;
+//STDataToBeSaved stDataToBeSaved;
 
 /* Private functions ---------------------------------------------------------*/
 void CmdFromHostComputerHandler(void)
@@ -393,9 +394,44 @@ void CmdFromHostComputerHandler(void)
 				}
 			}
 		}
-		else if(usartRevCmdBuffer[0] == 0xA2) // Temperature
+		else if(usartRevCmdBuffer[0] == 0xA2) // Load PDATA
 		{
-			NSA2860_LoadTempFromIntSensor(NULL);
+			uint8_t adc_L = 0;
+			uint8_t adc_M = 0;
+			uint8_t adc_H = 0;
+			
+			SPI_CSB_ENABLE();
+			
+			SPI_WriteByte(0x80);
+			SPI_WriteByte(0x06);
+			adc_H = SPI_WriteByte(0xFF);
+			
+			SPI_WriteByte(0x80);
+			SPI_WriteByte(0x07);
+			adc_M = SPI_WriteByte(0xFF);
+			
+			SPI_WriteByte(0x80);
+			SPI_WriteByte(0x08);
+			adc_L = SPI_WriteByte(0xFF);
+			
+			SPI_CSB_DISABLE();
+			
+			uint8_t cmdHeader = 0xA2;
+			Usart_WriteData(&cmdHeader, 1);
+			Usart_WriteData(&adc_H, 1);
+			Usart_WriteData(&adc_M, 1);
+			Usart_WriteData(&adc_L, 1);
+			printf("\r\n");
+			
+//			if(usartRevCmdBuffer[1] == 0x00)
+//			{
+//				CLR_A2_AUTO_UPDATE_FLG();
+//			}
+//			else
+//			{
+//				SET_A2_AUTO_UPDATE_FLG();
+//			}
+			//NSA2860_LoadTempFromIntSensor(NULL);
 		}
 		else if(usartRevCmdBuffer[0] == 0xA3) // DAC Write
 		{
