@@ -1901,6 +1901,21 @@ static void UserMenuSubDL1Up(void)
 			num_unit = 0;
 		}
 	}
+	else if(GET_CURSOR_POSITION() & _BIT4) // bit 4
+	{
+		uint8_t decimal = stSysAdjValSection2[stSysSaveDataSection1.eUnit].A1DL1Decimal;
+		
+		if(decimal < 3)
+		{
+			decimal++;
+		}
+		else
+		{
+			decimal = 0;
+		}
+
+		stSysAdjValSection2[stSysSaveDataSection1.eUnit].A1DL1Decimal = decimal;
+	}
 	else
 	{
 		// do nothing
@@ -1969,6 +1984,21 @@ static void UserMenuSubDL1Down(void)
 			num_unit = 9;
 		}
 	}
+	else if(GET_CURSOR_POSITION() & _BIT4) // bit 4
+	{
+		uint8_t decimal = stSysAdjValSection2[stSysSaveDataSection1.eUnit].A1DL1Decimal;
+		
+		if(decimal > 0)
+		{
+			decimal--;
+		}
+		else
+		{
+			decimal = 3;
+		}
+
+		stSysAdjValSection2[stSysSaveDataSection1.eUnit].A1DL1Decimal = decimal;
+	}
 	else
 	{
 		// do nothing
@@ -1985,14 +2015,7 @@ static void UserMenuSubDL1Down(void)
   */
 static void UserMenuSubDL1M(void)
 {
-	if(cursorPos & _BIT3)
-	{
-		cursorPos = 0x01;
-	}
-	else
-	{
-		cursorPos <<= 1;
-	}
+	UserMenuRightMoveCursorPos();
 }
 
 /**
@@ -2009,15 +2032,18 @@ static void UserMenuSubDL1S(void)
 	
 	stSysSaveDataSection2[stSysSaveDataSection1.eUnit].A1DL1_L = stSysAdjValSection2[stSysSaveDataSection1.eUnit].AlDL1 & 0x00ff;
 	stSysSaveDataSection2[stSysSaveDataSection1.eUnit].AlDL1_H = (stSysAdjValSection2[stSysSaveDataSection1.eUnit].AlDL1 & 0xff00) >> 8;
+	stSysSaveDataSection2[stSysSaveDataSection1.eUnit].A1DL1Decimal = stSysAdjValSection2[stSysSaveDataSection1.eUnit].A1DL1Decimal;
 	
 	switch(stSysSaveDataSection1.eUnit)
 	{
 		case UNIT_BAR:
 			EEPROM_WriteBytes(eBAR_A1_DL1_ADDR, (uint8_t *)&stSysSaveDataSection2[UNIT_BAR].AlDL1_H, 2);
+			EEPROM_WriteBytes(eBAR_A1_DL1_DECIMAL_ADDR, (uint8_t *)&stSysSaveDataSection2[UNIT_BAR].A1DL1Decimal, 1);
 			break;
 		
 		case UNIT_PSI:
 			EEPROM_WriteBytes(ePSI_A1_DL1_ADDR, (uint8_t *)&stSysSaveDataSection2[UNIT_PSI].AlDL1_H, 2);
+			EEPROM_WriteBytes(ePSI_A1_DL1_DECIMAL_ADDR, (uint8_t *)&stSysSaveDataSection2[UNIT_PSI].A1DL1Decimal, 1);
 			break;
 		
 		default:
@@ -2572,6 +2598,21 @@ static void UserMenuSubDL2Up(void)
 			num_unit = 0;
 		}
 	}
+	else if(GET_CURSOR_POSITION() & _BIT4) // bit 4
+	{
+		uint8_t decimal = stSysAdjValSection2[stSysSaveDataSection1.eUnit].A2DL2Decimal;
+		
+		if(decimal < 3)
+		{
+			decimal++;
+		}
+		else
+		{
+			decimal = 0;
+		}
+
+		stSysAdjValSection2[stSysSaveDataSection1.eUnit].A2DL2Decimal = decimal;
+	}
 	else
 	{
 		// do nothing
@@ -2640,6 +2681,21 @@ static void UserMenuSubDL2Down(void)
 			num_unit = 9;
 		}
 	}
+	else if(GET_CURSOR_POSITION() & _BIT4) // bit 4
+	{
+		uint8_t decimal = stSysAdjValSection2[stSysSaveDataSection1.eUnit].A2DL2Decimal;
+		
+		if(decimal > 0)
+		{
+			decimal--;
+		}
+		else
+		{
+			decimal = 3;
+		}
+
+		stSysAdjValSection2[stSysSaveDataSection1.eUnit].A2DL2Decimal = decimal;
+	}
 	else
 	{
 		// do nothing
@@ -2656,14 +2712,7 @@ static void UserMenuSubDL2Down(void)
   */
 static void UserMenuSubDL2M(void)
 {
-	if(cursorPos & _BIT3)
-	{
-		cursorPos = 0x01;
-	}
-	else
-	{
-		cursorPos <<= 1;
-	}
+	UserMenuRightMoveCursorPos();
 }
 
 /**
@@ -2680,15 +2729,18 @@ static void UserMenuSubDL2S(void)
 	
 	stSysSaveDataSection2[stSysSaveDataSection1.eUnit].A2DL2_L = stSysAdjValSection2[stSysSaveDataSection1.eUnit].A2DL2 & 0x00ff;
 	stSysSaveDataSection2[stSysSaveDataSection1.eUnit].A2DL2_H = (stSysAdjValSection2[stSysSaveDataSection1.eUnit].A2DL2 & 0xff00) >> 8;
+	stSysSaveDataSection2[stSysSaveDataSection1.eUnit].A2DL2Decimal = stSysAdjValSection2[stSysSaveDataSection1.eUnit].A2DL2Decimal;
 	
 	switch(stSysSaveDataSection1.eUnit)
 	{
 		case UNIT_BAR:
 			EEPROM_WriteBytes(eBAR_A2_DL2_ADDR, (uint8_t *)&stSysSaveDataSection2[UNIT_BAR].A2DL2_H, 2);
+			EEPROM_WriteBytes(eBAR_A2_DL2_DECIMAL_ADDR, (uint8_t *)&stSysSaveDataSection2[UNIT_BAR].A2DL2Decimal, 1);
 			break;
 		
 		case UNIT_PSI:
 			EEPROM_WriteBytes(ePSI_A2_DL2_ADDR, (uint8_t *)&stSysSaveDataSection2[UNIT_PSI].A2DL2_H, 2);
+			EEPROM_WriteBytes(ePSI_A2_DL2_DECIMAL_ADDR, (uint8_t *)&stSysSaveDataSection2[UNIT_PSI].A2DL2Decimal, 1);
 			break;
 		
 		default:

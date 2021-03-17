@@ -627,7 +627,7 @@ void LED_SegmentUserMenuStringDisplay(void)
 			break;
 		
 		case eMENU_DISPLAY_SUB_DL1:
-			LED_SegmentDisplay_R2L(stSysAdjValSection2[stSysAdjValSection1.eUnit].AlDL1, 0);
+			LED_SegmentDisplay_R2L(stSysAdjValSection2[stSysAdjValSection1.eUnit].AlDL1, stSysAdjValSection2[stSysAdjValSection1.eUnit].A1DL1Decimal);
 			break;
 		
 		case eMENU_DISPLAY_SUB_FUC2:
@@ -676,7 +676,7 @@ void LED_SegmentUserMenuStringDisplay(void)
 			break;
 		
 		case eMENU_DISPLAY_SUB_DL2:
-			LED_SegmentDisplay_R2L(stSysAdjValSection2[stSysAdjValSection1.eUnit].A2DL2, 0);
+			LED_SegmentDisplay_R2L(stSysAdjValSection2[stSysAdjValSection1.eUnit].A2DL2, stSysAdjValSection2[stSysAdjValSection1.eUnit].A2DL2Decimal);
 			break;
 		
 		default:
